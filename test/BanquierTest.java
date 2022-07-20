@@ -1,54 +1,71 @@
 import exception.GlobalException;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.*;
 
 public class BanquierTest {
 
-    private Banquier banquier;
-    private Client client1;
-    private Client client2;
-    private CompteBancaire compteBancaireNonValide;
-
-    @Before
-    public void setUp() {
-        this.compteBancaireNonValide = new CompteBancaire();
-        this.compteBancaireNonValide.setMontant(-1);
-
-        this.client1 = new Client("test1@test.fr",
-                "testPrenom1",
-                "testNom1",
-                LocalDate.now().minusYears(30),
-                Arrays.asList(new CompteBancaire(), new CompteBancaire()),
-                false);
-        this.client2 = new Client("test2@test.fr",
-                "testPrenom2",
-                "testNom2",
-                LocalDate.now().minusYears(40),
-                Arrays.asList(new CompteBancaire(), this.compteBancaireNonValide),
-                true);
-
-        this.banquier = new Banquier("banquier@test.fr", "banquierPrenom", "banquierNom",
-                LocalDate.now().minusYears(50), LocalDate.now().minusMonths(6), Arrays.asList(this.client1, this.client2));
+    // TODO
+    @Test
+    public void createBanquierTest() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("test@gmail.com", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.of(2020, 4, 2), myList);
+        assertEquals("test@gmail.com", myTestBanquier.getEmail());
+        assertEquals("prenomDeTest", myTestBanquier.getPrenom());
+        assertEquals(LocalDate.of(2020, 4, 2), myTestBanquier.getDateArrivee());
+        assertEquals(LocalDate.of(1995, 4, 2), myTestBanquier.getDateDeNaissance());
+        assertEquals(myList, myTestBanquier.getClients());
     }
 
     @Test
-    public void testAucunClientAContacter() throws GlobalException {
-        this.banquier.setClients(Arrays.asList(this.client1));
-        List<Client> clientAContacter = this.banquier.clientsAContacter();
-        Assert.assertTrue(clientAContacter.isEmpty());
+    public void compareBornAndArrived() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("test@gmail.com", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.of(2020, 4, 2), myList);
+        assertTrue(myTestBanquier.getDateArrivee().isAfter(myTestBanquier.getDateDeNaissance()));
+    }
+
+     @Test
+    public void controlBirthDate() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("test@gmail.com", "prenomDeTest", "nomDeTest", LocalDate.of(2000, 4, 2), LocalDate.of(2020, 4, 2), myList);
+        assertTrue(myTestBanquier.getDateDeNaissance().isBefore(LocalDate.now()));
     }
 
     @Test
-    public void testUnClientAContacter() throws GlobalException {
-        this.banquier.setClients(Arrays.asList(this.client1, this.client2));
-        List<Client> clientAContacter = this.banquier.clientsAContacter();
-        Assert.assertFalse(clientAContacter.isEmpty());
-        Assert.assertEquals("test2@test.fr", clientAContacter.get(0).getEmail());
+    public void cannotContatClient() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("test@gmail.com", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.of(2022, 4, 2), myList);
+        assertTrue(myTestBanquier.getDateArrivee().isAfter(myTestBanquier.getDateDeNaissance()));
+    }
+
+    @Test
+    public void controlEmailFormat() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("test@gmail.com", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.of(2022, 4, 2), myList);
+        Pattern emailRegex = Pattern.compile("\\b[\\w.-]+@[\\w.-]+\\.\\w{2,4}\\b");
+        Matcher emailIsValid = emailRegex.matcher(myTestBanquier.getEmail());
+        assertTrue(emailIsValid.matches());
+    }
+
+    @Test
+    public void controlEmailFormatBis() {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("testgmailcom", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.of(2022, 4, 2), myList);
+        Pattern emailRegex = Pattern.compile("\\b[\\w.-]+@[\\w.-]+\\.\\w{2,4}\\b");
+        Matcher emailIsValid = emailRegex.matcher(myTestBanquier.getEmail());
+        assertFalse(emailIsValid.matches());
+    }
+
+    @Test(expected = GlobalException.class)
+    public void controleNouveauBanquier() throws GlobalException {
+        List <Client> myList = new ArrayList<Client>();
+        Banquier myTestBanquier = new Banquier("testgmailcom", "prenomDeTest", "nomDeTest", LocalDate.of(1995, 4, 2), LocalDate.now(), myList);
+        myTestBanquier.setClients(myTestBanquier.clientsAContacter());;
     }
 }

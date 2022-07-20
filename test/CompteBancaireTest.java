@@ -2,50 +2,75 @@ import exception.CreditException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 public class CompteBancaireTest {
-    private CompteBancaire compteBancaire = new CompteBancaire();
 
+    // TODO
     @Test
-    public void testCreditNominal() throws CreditException {
-        this.compteBancaire.setMontant(800);
-        CompteRenduOperation op = this.compteBancaire.credit(50);
-        Assert.assertEquals(850, op.getNouveauSolde());
-        Assert.assertEquals(50, op.getMontantCredite());
-        Assert.assertEquals(0, op.getMontantNonCredite());
-        Assert.assertEquals(0, op.getMontantDebite());
-        Assert.assertEquals(0, op.getMontantNonDebite());
+    public void compteBanquaireCredite() throws CreditException {
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.setMontant(50);
+        CompteRenduOperation newCompteRendu;
+        newCompteRendu = newCb.credit(50);
+        assertEquals(100, newCompteRendu.getNouveauSolde());
+    }
+
+    @Test (expected = CreditException.class)
+    public void mauvaisMontantAcrediter() throws CreditException {
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.setMontant(0);
+        CompteRenduOperation newCompteRendu;
+        newCompteRendu = newCb.credit(-20);
     }
 
     @Test
-    public void testPartialCreditMaxReached() throws CreditException {
-        this.compteBancaire.setMontant(800);
-        CompteRenduOperation op = this.compteBancaire.credit(300);
-        Assert.assertEquals(1000, op.getNouveauSolde());
-        Assert.assertEquals(200, op.getMontantCredite());
-        Assert.assertEquals(100, op.getMontantNonCredite());
-        Assert.assertEquals(0, op.getMontantDebite());
-        Assert.assertEquals(0, op.getMontantNonDebite());
+    public void compteBanquaireDebite() throws CreditException {
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.setMontant(100);
+        CompteRenduOperation newCompteRendu;
+        newCompteRendu = newCb.debit(50);
+        assertEquals(50, newCompteRendu.getNouveauSolde());
     }
 
     @Test
-    public void testDebitNominal() throws CreditException {
-        this.compteBancaire.setMontant(800);
-        CompteRenduOperation op = this.compteBancaire.debit(200);
-        Assert.assertEquals(600, op.getNouveauSolde());
-        Assert.assertEquals(200, op.getMontantDebite());
-        Assert.assertEquals(0, op.getMontantNonDebite());
-        Assert.assertEquals(0, op.getMontantCredite());
-        Assert.assertEquals(0, op.getMontantNonCredite());
+    public void compteBanquaireDebiteNegatif() throws CreditException {
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.setMontant(50);
+        CompteRenduOperation newCompteRendu;
+        newCompteRendu = newCb.debit(100);
+    }
+
+    @Test (expected = CreditException.class)
+    public void mauvaisMontant() throws CreditException {
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.setMontant(0);
+        CompteRenduOperation newCompteRendu;
+        newCompteRendu = newCb.credit(-20);
     }
 
     @Test
-    public void testPartialDebitMinReached() throws CreditException {
-        this.compteBancaire.setMontant(300);
-        CompteRenduOperation op = this.compteBancaire.debit(500);
-        Assert.assertEquals(0, op.getNouveauSolde());
-        Assert.assertEquals(300, op.getMontantDebite());
-        Assert.assertEquals(200, op.getMontantNonDebite());
-        Assert.assertEquals(0, op.getMontantCredite());
-        Assert.assertEquals(0, op.getMontantNonCredite());
+    public void comptePasValide(){
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.estValide();
+        newCb.setMontant(-20);
+        assertEquals(false, newCb.estValide());
     }
+
+    @Test
+    public void compteValide(){
+        CompteBancaire newCb = new CompteBancaire();
+        newCb.estValide();
+        newCb.setMontant(50);
+        assertEquals(true, newCb.estValide());
+    }
+
 }
